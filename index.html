@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Research: Nursing Students' Clinical Practice Experiences</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 30px 20px;
+            color: #1a2a3a;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 30px 32px 50px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: #0b3b5f;
+            border-left: 6px solid #2c7da0;
+            padding-left: 20px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .research-sub {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 1rem;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: #e9ecef;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: #1e6091;
+        }
+        .section-title {
+            background: #f1f5f9;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin: 30px 0 18px 0;
+            color: #0f2c3d;
+            border-left: 5px solid #2c7da0;
+        }
+        .form-group {
+            margin-bottom: 25px;
+            background: #fefefe;
+            padding: 8px 5px;
+            border-radius: 16px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 10px;
+            color: #1e4663;
+            font-size: 1rem;
+        }
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .radio-group label, .checkbox-group label {
+            font-weight: normal;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 0;
+            cursor: pointer;
+            background: #f8fafc;
+            padding: 10px 20px;
+            border-radius: 60px;
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        .radio-group label:hover, .checkbox-group label:hover {
+            background: #e6f0fa;
+            border-color: #2c7da0;
+        }
+        .radio-group input, .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin: 0;
+        }
+        .radio-group label:has(input:checked), .checkbox-group label:has(input:checked) {
+            background: #2c7da0;
+            border-color: #2c7da0;
+            color: white;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            background: white;
+            transition: 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+        .likert-options {
+            display: flex;
+            gap: 8px;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .likert-option {
+            text-align: center;
+            flex: 1;
+            min-width: 55px;
+        }
+        .likert-option input {
+            display: none;
+        }
+        .likert-option label {
+            display: block;
+            padding: 10px 5px;
+            background: #f5f7fc;
+            border: 1.5px solid #dde7f5;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .likert-option input:checked + label {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
+        }
+        .scale-hint {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            color: #5b7a9a;
+            padding: 0 5px;
+        }
+        button {
+            background: #1f6392;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0b4b6e;
+            transform: scale(1.01);
+        }
+        .status-msg {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 28px;
+            text-align: center;
+            font-weight: 500;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #5b6e8c;
+            margin-top: 35px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .required-star {
+            color: #c73e1d;
+        }
+        @media (max-width: 700px) {
+            .container { padding: 20px; }
+            .radio-group, .checkbox-group { gap: 8px; }
+            .radio-group label, .checkbox-group label { padding: 8px 12px; font-size: 0.8rem; }
+            .likert-option label { font-size: 0.65rem; padding: 6px 3px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 EXPERIENCES OF NURSING STUDENTS IN CLINICAL PRACTICE</h1>
+    <div class="research-sub">
+        <span>🏥 Nurses' Training College, Pantang</span>
+        <span class="badge">👥 Research: Agyei, Bernard, Gyamfi, Gilbert, Amoako</span>
+    </div>
+    <p><strong>🔒 Confidential & anonymous</strong> — Your responses help us improve clinical education. Please answer honestly.</p>
+    <p>✅ ~15-20 minutes to complete. No right or wrong answers.</p>
+
+    <form id="surveyForm">
+        <!-- ================= SECTION A: DEMOGRAPHICS (6 items) ================= -->
+        <div class="section-title">📌 SECTION A: DEMOGRAPHIC INFORMATION</div>
+        
+        <div class="form-group"><label>A1. Age (years) <span class="required-star">*</span></label>
+            <input type="number" id="age" placeholder="Enter your age" required></div>
+        
+        <div class="form-group"><label>A2. Gender <span class="required-star">*</span></label>
+            <div class="radio-group">
+                <label><input type="radio" name="gender" value="Male"> <span>Male</span></label>
+                <label><input type="radio" name="gender" value="Female"> <span>Female</span></label>
+                <label><input type="radio" name="gender" value="Other"> <span>Other</span></label>
+            </div>
+        </div>
+        
+        <div class="form-group"><label>A3. Year of Study <span class="required-star">*</span></label>
+            <div class="radio-group">
+                <label><input type="radio" name="year" value="Year 1"> <span>Year 1</span></label>
+                <label><input type="radio" name="year" value="Year 2"> <span>Year 2</span></label>
+                <label><input type="radio" name="year" value="Year 3"> <span>Year 3</span></label>
+            </div>
+        </div>
+        
+        <div class="form-group"><label>A4. Number of clinical placements completed</label>
+            <div class="radio-group">
+                <label><input type="radio" name="placements" value="1-2"> <span>1-2 placements</span></label>
+                <label><input type="radio" name="placements" value="3-4"> <span>3-4 placements</span></label>
+                <label><input type="radio" name="placements" value="5-6"> <span>5-6 placements</span></label>
+                <label><input type="radio" name="placements" value="7+"> <span>7+ placements</span></label>
+            </div>
+        </div>
+        
+        <div class="form-group"><label>A5. What type of healthcare facilities have you been posted to? (Select all that apply)</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="facility1" value="Teaching Hospital"> <span>Teaching Hospital</span></label>
+                <label><input type="checkbox" name="facility2" value="District Hospital"> <span>District Hospital</span></label>
+                <label><input type="checkbox" name="facility3" value="Community Health Centre"> <span>Community Health Centre</span></label>
+                <label><input type="checkbox" name="facility4" value="Psychiatric Hospital (Pantang)"> <span>Psychiatric Hospital (Pantang)</span></label>
+                <label><input type="checkbox" name="facility5" value="Polyclinic"> <span>Polyclinic</span></label>
+                <label><input type="checkbox" name="facility6" value="Private Hospital"> <span>Private Hospital</span></label>
+            </div>
+        </div>
+        
+        <div class="form-group"><label>A6. How would you rate your overall academic performance so far?</label>
+            <div class="radio-group">
+                <label><input type="radio" name="academicPerformance" value="Excellent"> <span>Excellent</span></label>
+                <label><input type="radio" name="academicPerformance" value="Good"> <span>Good</span></label>
+                <label><input type="radio" name="academicPerformance" value="Average"> <span>Average</span></label>
+                <label><input type="radio" name="academicPerformance" value="Below Average"> <span>Below Average</span></label>
+                <label><input type="radio" name="academicPerformance" value="Poor"> <span>Poor</span></label>
+            </div>
+        </div>
+
+        <!-- ================= SECTION B: ATTITUDES (8 items) ================= -->
+        <div class="section-title">😊 SECTION B: ATTITUDES TOWARD CLINICAL PRACTICE</div>
+        <p style="margin-bottom: 15px; color: #5b7a9a;">Rate how much you agree with each statement: <strong>1=Strongly Disagree → 5=Strongly Agree</strong></p>
+        <div class="scale-hint"><span>1 (SD)</span><span>2 (D)</span><span>3 (N)</span><span>4 (A)</span><span>5 (SA)</span></div>
+        
+        <div class="form-group"><label>B1. I feel excited before starting clinical placement</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude1" value="1" id="att1_1"><label for="att1_1">1</label></div><div class="likert-option"><input type="radio" name="attitude1" value="2" id="att1_2"><label for="att1_2">2</label></div><div class="likert-option"><input type="radio" name="attitude1" value="3" id="att1_3"><label for="att1_3">3</label></div><div class="likert-option"><input type="radio" name="attitude1" value="4" id="att1_4"><label for="att1_4">4</label></div><div class="likert-option"><input type="radio" name="attitude1" value="5" id="att1_5"><label for="att1_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B2. I feel confident in my clinical skills</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude2" value="1" id="att2_1"><label for="att2_1">1</label></div><div class="likert-option"><input type="radio" name="attitude2" value="2" id="att2_2"><label for="att2_2">2</label></div><div class="likert-option"><input type="radio" name="attitude2" value="3" id="att2_3"><label for="att2_3">3</label></div><div class="likert-option"><input type="radio" name="attitude2" value="4" id="att2_4"><label for="att2_4">4</label></div><div class="likert-option"><input type="radio" name="attitude2" value="5" id="att2_5"><label for="att2_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B3. I feel anxious or nervous before clinical duty</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude3" value="1" id="att3_1"><label for="att3_1">1</label></div><div class="likert-option"><input type="radio" name="attitude3" value="2" id="att3_2"><label for="att3_2">2</label></div><div class="likert-option"><input type="radio" name="attitude3" value="3" id="att3_3"><label for="att3_3">3</label></div><div class="likert-option"><input type="radio" name="attitude3" value="4" id="att3_4"><label for="att3_4">4</label></div><div class="likert-option"><input type="radio" name="attitude3" value="5" id="att3_5"><label for="att3_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B4. I am motivated to learn during clinical practice</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude4" value="1" id="att4_1"><label for="att4_1">1</label></div><div class="likert-option"><input type="radio" name="attitude4" value="2" id="att4_2"><label for="att4_2">2</label></div><div class="likert-option"><input type="radio" name="attitude4" value="3" id="att4_3"><label for="att4_3">3</label></div><div class="likert-option"><input type="radio" name="attitude4" value="4" id="att4_4"><label for="att4_4">4</label></div><div class="likert-option"><input type="radio" name="attitude4" value="5" id="att4_5"><label for="att4_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B5. I actively seek opportunities to practice nursing procedures</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude5" value="1" id="att5_1"><label for="att5_1">1</label></div><div class="likert-option"><input type="radio" name="attitude5" value="2" id="att5_2"><label for="att5_2">2</label></div><div class="likert-option"><input type="radio" name="attitude5" value="3" id="att5_3"><label for="att5_3">3</label></div><div class="likert-option"><input type="radio" name="attitude5" value="4" id="att5_4"><label for="att5_4">4</label></div><div class="likert-option"><input type="radio" name="attitude5" value="5" id="att5_5"><label for="att5_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B6. I feel that clinical staff welcome my presence on the ward</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude6" value="1" id="att6_1"><label for="att6_1">1</label></div><div class="likert-option"><input type="radio" name="attitude6" value="2" id="att6_2"><label for="att6_2">2</label></div><div class="likert-option"><input type="radio" name="attitude6" value="3" id="att6_3"><label for="att6_3">3</label></div><div class="likert-option"><input type="radio" name="attitude6" value="4" id="att6_4"><label for="att6_4">4</label></div><div class="likert-option"><input type="radio" name="attitude6" value="5" id="att6_5"><label for="att6_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B7. Clinical practice enhances my critical thinking abilities</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude7" value="1" id="att7_1"><label for="att7_1">1</label></div><div class="likert-option"><input type="radio" name="attitude7" value="2" id="att7_2"><label for="att7_2">2</label></div><div class="likert-option"><input type="radio" name="attitude7" value="3" id="att7_3"><label for="att7_3">3</label></div><div class="likert-option"><input type="radio" name="attitude7" value="4" id="att7_4"><label for="att7_4">4</label></div><div class="likert-option"><input type="radio" name="attitude7" value="5" id="att7_5"><label for="att7_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>B8. I believe clinical practice is essential for becoming a competent nurse</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="attitude8" value="1" id="att8_1"><label for="att8_1">1</label></div><div class="likert-option"><input type="radio" name="attitude8" value="2" id="att8_2"><label for="att8_2">2</label></div><div class="likert-option"><input type="radio" name="attitude8" value="3" id="att8_3"><label for="att8_3">3</label></div><div class="likert-option"><input type="radio" name="attitude8" value="4" id="att8_4"><label for="att8_4">4</label></div><div class="likert-option"><input type="radio" name="attitude8" value="5" id="att8_5"><label for="att8_5">5</label></div></div>
+        </div>
+
+        <!-- ================= SECTION C: CHALLENGES (9 items) ================= -->
+        <div class="section-title">⚠️ SECTION C: CHALLENGES FACED DURING CLINICAL PRACTICE</div>
+        <p style="margin-bottom: 15px; color: #5b7a9a;">Rate how often you experience each challenge: <strong>1=Never → 5=Always</strong></p>
+        <div class="scale-hint"><span>1 (Never)</span><span>2 (Rarely)</span><span>3 (Sometimes)</span><span>4 (Often)</span><span>5 (Always)</span></div>
+        
+        <div class="form-group"><label>C1. Inadequate supervision from clinical instructors</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge1" value="1" id="ch1_1"><label for="ch1_1">1</label></div><div class="likert-option"><input type="radio" name="challenge1" value="2" id="ch1_2"><label for="ch1_2">2</label></div><div class="likert-option"><input type="radio" name="challenge1" value="3" id="ch1_3"><label for="ch1_3">3</label></div><div class="likert-option"><input type="radio" name="challenge1" value="4" id="ch1_4"><label for="ch1_4">4</label></div><div class="likert-option"><input type="radio" name="challenge1" value="5" id="ch1_5"><label for="ch1_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C2. Theory-practice gap (what I learn in class differs from practice)</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge2" value="1" id="ch2_1"><label for="ch2_1">1</label></div><div class="likert-option"><input type="radio" name="challenge2" value="2" id="ch2_2"><label for="ch2_2">2</label></div><div class="likert-option"><input type="radio" name="challenge2" value="3" id="ch2_3"><label for="ch2_3">3</label></div><div class="likert-option"><input type="radio" name="challenge2" value="4" id="ch2_4"><label for="ch2_4">4</label></div><div class="likert-option"><input type="radio" name="challenge2" value="5" id="ch2_5"><label for="ch2_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C3. Stress and anxiety during clinical rotations</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge3" value="1" id="ch3_1"><label for="ch3_1">1</label></div><div class="likert-option"><input type="radio" name="challenge3" value="2" id="ch3_2"><label for="ch3_2">2</label></div><div class="likert-option"><input type="radio" name="challenge3" value="3" id="ch3_3"><label for="ch3_3">3</label></div><div class="likert-option"><input type="radio" name="challenge3" value="4" id="ch3_4"><label for="ch3_4">4</label></div><div class="likert-option"><input type="radio" name="challenge3" value="5" id="ch3_5"><label for="ch3_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C4. Negative attitudes from clinical staff towards students</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge4" value="1" id="ch4_1"><label for="ch4_1">1</label></div><div class="likert-option"><input type="radio" name="challenge4" value="2" id="ch4_2"><label for="ch4_2">2</label></div><div class="likert-option"><input type="radio" name="challenge4" value="3" id="ch4_3"><label for="ch4_3">3</label></div><div class="likert-option"><input type="radio" name="challenge4" value="4" id="ch4_4"><label for="ch4_4">4</label></div><div class="likert-option"><input type="radio" name="challenge4" value="5" id="ch4_5"><label for="ch4_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C5. Limited resources (equipment, supplies) for practice</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge5" value="1" id="ch5_1"><label for="ch5_1">1</label></div><div class="likert-option"><input type="radio" name="challenge5" value="2" id="ch5_2"><label for="ch5_2">2</label></div><div class="likert-option"><input type="radio" name="challenge5" value="3" id="ch5_3"><label for="ch5_3">3</label></div><div class="likert-option"><input type="radio" name="challenge5" value="4" id="ch5_4"><label for="ch5_4">4</label></div><div class="likert-option"><input type="radio" name="challenge5" value="5" id="ch5_5"><label for="ch5_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C6. Fear of making mistakes during patient care</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge6" value="1" id="ch6_1"><label for="ch6_1">1</label></div><div class="likert-option"><input type="radio" name="challenge6" value="2" id="ch6_2"><label for="ch6_2">2</label></div><div class="likert-option"><input type="radio" name="challenge6" value="3" id="ch6_3"><label for="ch6_3">3</label></div><div class="likert-option"><input type="radio" name="challenge6" value="4" id="ch6_4"><label for="ch6_4">4</label></div><div class="likert-option"><input type="radio" name="challenge6" value="5" id="ch6_5"><label for="ch6_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C7. Large number of students competing for learning opportunities</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge7" value="1" id="ch7_1"><label for="ch7_1">1</label></div><div class="likert-option"><input type="radio" name="challenge7" value="2" id="ch7_2"><label for="ch7_2">2</label></div><div class="likert-option"><input type="radio" name="challenge7" value="3" id="ch7_3"><label for="ch7_3">3</label></div><div class="likert-option"><input type="radio" name="challenge7" value="4" id="ch7_4"><label for="ch7_4">4</label></div><div class="likert-option"><input type="radio" name="challenge7" value="5" id="ch7_5"><label for="ch7_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C8. Lack of clarity about my roles and responsibilities on the ward</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge8" value="1" id="ch8_1"><label for="ch8_1">1</label></div><div class="likert-option"><input type="radio" name="challenge8" value="2" id="ch8_2"><label for="ch8_2">2</label></div><div class="likert-option"><input type="radio" name="challenge8" value="3" id="ch8_3"><label for="ch8_3">3</label></div><div class="likert-option"><input type="radio" name="challenge8" value="4" id="ch8_4"><label for="ch8_4">4</label></div><div class="likert-option"><input type="radio" name="challenge8" value="5" id="ch8_5"><label for="ch8_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>C9. Difficulty balancing clinical practice with academic coursework</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="challenge9" value="1" id="ch9_1"><label for="ch9_1">1</label></div><div class="likert-option"><input type="radio" name="challenge9" value="2" id="ch9_2"><label for="ch9_2">2</label></div><div class="likert-option"><input type="radio" name="challenge9" value="3" id="ch9_3"><label for="ch9_3">3</label></div><div class="likert-option"><input type="radio" name="challenge9" value="4" id="ch9_4"><label for="ch9_4">4</label></div><div class="likert-option"><input type="radio" name="challenge9" value="5" id="ch9_5"><label for="ch9_5">5</label></div></div>
+        </div>
+
+        <!-- ================= SECTION D: COPING STRATEGIES (9 items) ================= -->
+        <div class="section-title">🛡️ SECTION D: COPING STRATEGIES</div>
+        <p style="margin-bottom: 15px; color: #5b7a9a;">Rate how often you use each strategy: <strong>1=Never → 5=Always</strong></p>
+        <div class="scale-hint"><span>1 (Never)</span><span>2 (Rarely)</span><span>3 (Sometimes)</span><span>4 (Often)</span><span>5 (Always)</span></div>
+        
+        <div class="form-group"><label>D1. I seek help from clinical instructors when facing difficulties</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope1" value="1" id="cope1_1"><label for="cope1_1">1</label></div><div class="likert-option"><input type="radio" name="cope1" value="2" id="cope1_2"><label for="cope1_2">2</label></div><div class="likert-option"><input type="radio" name="cope1" value="3" id="cope1_3"><label for="cope1_3">3</label></div><div class="likert-option"><input type="radio" name="cope1" value="4" id="cope1_4"><label for="cope1_4">4</label></div><div class="likert-option"><input type="radio" name="cope1" value="5" id="cope1_5"><label for="cope1_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D2. I discuss challenges with my fellow nursing students</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope2" value="1" id="cope2_1"><label for="cope2_1">1</label></div><div class="likert-option"><input type="radio" name="cope2" value="2" id="cope2_2"><label for="cope2_2">2</label></div><div class="likert-option"><input type="radio" name="cope2" value="3" id="cope2_3"><label for="cope2_3">3</label></div><div class="likert-option"><input type="radio" name="cope2" value="4" id="cope2_4"><label for="cope2_4">4</label></div><div class="likert-option"><input type="radio" name="cope2" value="5" id="cope2_5"><label for="cope2_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D3. I pray or use religious coping to manage stress</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope3" value="1" id="cope3_1"><label for="cope3_1">1</label></div><div class="likert-option"><input type="radio" name="cope3" value="2" id="cope3_2"><label for="cope3_2">2</label></div><div class="likert-option"><input type="radio" name="cope3" value="3" id="cope3_3"><label for="cope3_3">3</label></div><div class="likert-option"><input type="radio" name="cope3" value="4" id="cope3_4"><label for="cope3_4">4</label></div><div class="likert-option"><input type="radio" name="cope3" value="5" id="cope3_5"><label for="cope3_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D4. I try to solve problems myself before asking for help</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope4" value="1" id="cope4_1"><label for="cope4_1">1</label></div><div class="likert-option"><input type="radio" name="cope4" value="2" id="cope4_2"><label for="cope4_2">2</label></div><div class="likert-option"><input type="radio" name="cope4" value="3" id="cope4_3"><label for="cope4_3">3</label></div><div class="likert-option"><input type="radio" name="cope4" value="4" id="cope4_4"><label for="cope4_4">4</label></div><div class="likert-option"><input type="radio" name="cope4" value="5" id="cope4_5"><label for="cope4_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D5. I withdraw or keep to myself when stressed</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope5" value="1" id="cope5_1"><label for="cope5_1">1</label></div><div class="likert-option"><input type="radio" name="cope5" value="2" id="cope5_2"><label for="cope5_2">2</label></div><div class="likert-option"><input type="radio" name="cope5" value="3" id="cope5_3"><label for="cope5_3">3</label></div><div class="likert-option"><input type="radio" name="cope5" value="4" id="cope5_4"><label for="cope5_4">4</label></div><div class="likert-option"><input type="radio" name="cope5" value="5" id="cope5_5"><label for="cope5_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D6. I use substances (alcohol, drugs) to cope with stress</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope6" value="1" id="cope6_1"><label for="cope6_1">1</label></div><div class="likert-option"><input type="radio" name="cope6" value="2" id="cope6_2"><label for="cope6_2">2</label></div><div class="likert-option"><input type="radio" name="cope6" value="3" id="cope6_3"><label for="cope6_3">3</label></div><div class="likert-option"><input type="radio" name="cope6" value="4" id="cope6_4"><label for="cope6_4">4</label></div><div class="likert-option"><input type="radio" name="cope6" value="5" id="cope6_5"><label for="cope6_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D7. I talk to family members about my clinical experiences</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope7" value="1" id="cope7_1"><label for="cope7_1">1</label></div><div class="likert-option"><input type="radio" name="cope7" value="2" id="cope7_2"><label for="cope7_2">2</label></div><div class="likert-option"><input type="radio" name="cope7" value="3" id="cope7_3"><label for="cope7_3">3</label></div><div class="likert-option"><input type="radio" name="cope7" value="4" id="cope7_4"><label for="cope7_4">4</label></div><div class="likert-option"><input type="radio" name="cope7" value="5" id="cope7_5"><label for="cope7_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D8. I engage in physical exercise or hobbies to relieve stress</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope8" value="1" id="cope8_1"><label for="cope8_1">1</label></div><div class="likert-option"><input type="radio" name="cope8" value="2" id="cope8_2"><label for="cope8_2">2</label></div><div class="likert-option"><input type="radio" name="cope8" value="3" id="cope8_3"><label for="cope8_3">3</label></div><div class="likert-option"><input type="radio" name="cope8" value="4" id="cope8_4"><label for="cope8_4">4</label></div><div class="likert-option"><input type="radio" name="cope8" value="5" id="cope8_5"><label for="cope8_5">5</label></div></div>
+        </div>
+        <div class="form-group"><label>D9. I reflect on my experiences to learn from mistakes</label>
+            <div class="likert-options"><div class="likert-option"><input type="radio" name="cope9" value="1" id="cope9_1"><label for="cope9_1">1</label></div><div class="likert-option"><input type="radio" name="cope9" value="2" id="cope9_2"><label for="cope9_2">2</label></div><div class="likert-option"><input type="radio" name="cope9" value="3" id="cope9_3"><label for="cope9_3">3</label></div><div class="likert-option"><input type="radio" name="cope9" value="4" id="cope9_4"><label for="cope9_4">4</label></div><div class="likert-option"><input type="radio" name="cope9" value="5" id="cope9_5"><label for="cope9_5">5</label></div></div>
+        </div>
+
+        <!-- ================= SECTION E: ADDITIONAL COMMENTS ================= -->
+        <div class="section-title">💬 SECTION E: ADDITIONAL FEEDBACK</div>
+        <div class="form-group"><label>E1. What suggestions do you have to improve clinical practice for nursing students?</label>
+            <textarea id="suggestions" rows="3" placeholder="Please share your suggestions..."></textarea>
+        </div>
+        <div class="form-group"><label>E2. Any other comments about your clinical practice experiences?</label>
+            <textarea id="comments" rows="3" placeholder="Any other thoughts, concerns, or experiences you want to share..."></textarea>
+        </div>
+        
+        <button type="button" id="submitBtn">✅ SUBMIT RESPONSE (SAVE TO DATABASE)</button>
+        <div id="statusMsg" class="status-msg"></div>
+    </form>
+    <footer>🔐 Data saved via Firebase Firestore to collection: <strong>nursing_clinical_experiences</strong> | No personal identifiers stored | For support: NTC Pantang Academic Office</footer>
+</div>
+
+<script>
+    // Firebase configuration
+    const firebaseConfig = {
+               apiKey: "AIzaSyC7FDWkA5wJ10eKjB9rtKticpcOJAg4J2w",
+        authDomain: "fingbrain-f2413.firebaseapp.com",
+        projectId: "fingbrain-f2413",
+        storageBucket: "fingbrain-f2413.firebasestorage.app",
+        messagingSenderId: "353977613992",
+        appId: "1:353977613992:web:8ac9020732454fee0e0c9d"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function getRadioValue(name) {
+        const radios = document.getElementsByName(name);
+        for(let i = 0; i < radios.length; i++) {
+            if(radios[i].checked) return radios[i].value;
+        }
+        return null;
+    }
+
+    function getCheckboxValues(prefix, count) {
+        let values = [];
+        for(let i = 1; i <= count; i++) {
+            const checkbox = document.getElementsByName(prefix + i)[0];
+            if(checkbox && checkbox.checked) values.push(checkbox.value);
+        }
+        return values;
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const statusDiv = document.getElementById('statusMsg');
+        statusDiv.innerHTML = '⏳ Submitting, please wait...';
+        statusDiv.style.background = '#e9ecef';
+        
+        const age = document.getElementById('age').value;
+        if(!age || age < 16 || age > 60) {
+            statusDiv.innerHTML = '❌ Please enter a valid age (16-60 years).';
+            statusDiv.style.background = '#ffe6e5';
+            return;
+        }
+        
+        const gender = document.querySelector('input[name="gender"]:checked')?.value || '';
+        const year = document.querySelector('input[name="year"]:checked')?.value || '';
+        
+        if(!gender || !year) {
+            statusDiv.innerHTML = '❌ Please complete all required fields (Gender and Year of Study).';
+            statusDiv.style.background = '#ffe6e5';
+            return;
+        }
+        
+        const placements = document.querySelector('input[name="placements"]:checked')?.value || '';
+        const academicPerformance = document.querySelector('input[name="academicPerformance"]:checked')?.value || '';
+        const facilities = getCheckboxValues('facility', 6);
+        
+        // Collect attitudes (8 items)
+        const attitudes = [];
+        for(let i = 1; i <= 8; i++) attitudes.push(getRadioValue(`attitude${i}`));
+        
+        // Collect challenges (9 items)
+        const challenges = [];
+        for(let i = 1; i <= 9; i++) challenges.push(getRadioValue(`challenge${i}`));
+        
+        // Collect coping (9 items)
+        const coping = [];
+        for(let i = 1; i <= 9; i++) coping.push(getRadioValue(`cope${i}`));
+        
+        const suggestions = document.getElementById('suggestions').value;
+        const comments = document.getElementById('comments').value;
+        
+        const payload = {
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            demographic: {
+                age: parseInt(age),
+                gender: gender,
+                yearOfStudy: year,
+                placementsCompleted: placements,
+                facilitiesPostedTo: facilities,
+                academicPerformance: academicPerformance
+            },
+            attitudes: {
+                excited: attitudes[0],
+                confident: attitudes[1],
+                anxious: attitudes[2],
+                motivated: attitudes[3],
+                seeksOpportunities: attitudes[4],
+                staffWelcome: attitudes[5],
+                criticalThinking: attitudes[6],
+                essentialForCompetence: attitudes[7]
+            },
+            challenges: {
+                inadequateSupervision: challenges[0],
+                theoryPracticeGap: challenges[1],
+                stressAnxiety: challenges[2],
+                negativeStaffAttitudes: challenges[3],
+                limitedResources: challenges[4],
+                fearOfMistakes: challenges[5],
+                studentCompetition: challenges[6],
+                unclearRoles: challenges[7],
+                workLifeBalance: challenges[8]
+            },
+            coping: {
+                seekInstructorHelp: coping[0],
+                discussWithPeers: coping[1],
+                religiousCoping: coping[2],
+                selfProblemSolve: coping[3],
+                withdrawal: coping[4],
+                substanceUse: coping[5],
+                talkToFamily: coping[6],
+                physicalActivity: coping[7],
+                reflection: coping[8]
+            },
+            suggestions: suggestions,
+            comments: comments
+        };
+        
+        try {
+            await db.collection("nursing_clinical_experiences").add(payload);
+            statusDiv.innerHTML = '✅ Response successfully recorded! Thank you for contributing to nursing education research at NTC Pantang.';
+            statusDiv.style.background = '#d4edda';
+            statusDiv.style.color = '#155724';
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 500);
+        } catch (error) {
+            console.error("Firestore error:", error);
+            statusDiv.innerHTML = '❌ Submission failed. Please check your connection. Error: ' + error.message;
+            statusDiv.style.background = '#f8d7da';
+            statusDiv.style.color = '#721c24';
+        }
+    });
+</script>
+</body>
+</html>
